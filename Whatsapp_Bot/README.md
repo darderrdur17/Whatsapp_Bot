@@ -58,9 +58,16 @@ That's the entire Minimum Viable Product; everything else is optional polish. �
 
 ### B. Google Sheets → Search Rows
 1. Add **Google Sheets > Search Rows**.
-2. Connection: authorize with your Google account.  
-   File: *Time Log MVP* • Sheet: *Employees*.
-3. Condition: **Phone Number = `replace(From; "whatsapp:"; "")`** (removes the "whatsapp:" prefix from Twilio's phone number). Limit = 1.
+2. **Connection:** authorize with your Google account.
+3. **Spreadsheet ID:** Select your *Time Log MVP* spreadsheet.
+4. **Sheet Name:** Select *Employees*.
+5. **Table contains headers:** ✅ Check this box.
+6. **Column range:** Leave as default (A:B) to search both Phone Number and Employee Name columns.
+7. **Filter:** Click the filter icon and add:
+   - **Field:** `Phone Number` (Column A)
+   - **Condition:** `Equal to`
+   - **Value:** `{{replace(1.From; "whatsapp:"; "")}}` (this removes the "whatsapp:" prefix from Twilio's phone number)
+8. **Limit:** Set to `1`.
    > **💡 Phone Number Matching:** Twilio sends phone numbers as `whatsapp:+6581234567`, but your sheet stores them as `6581234567`. The `replace()` function strips the `whatsapp:` prefix for proper matching.
 
 ### C. Router & Command Paths
