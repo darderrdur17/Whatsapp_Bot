@@ -73,35 +73,95 @@ That's the entire Minimum Viable Product; everything else is optional polish. �
 ### C. Router & Command Paths
 Add a **Router** after the Search step; create three branches:
 
-| Path | Filter Condition (`lower(trim(Body))`) |
-|------|---------------------------------------|
-| Check-in | `/checkin` |
-| Check-out | `/checkout` |
-| Default | *else* |
+| Path | Filter Condition |
+|------|------------------|
+| Check-in | `{{lower(trim(1.Body))}}` equals `/checkin` |
+| Check-out | `{{lower(trim(1.Body))}}` equals `/checkout` |
+| Default | *else* (no filter condition) |
+
+> **💡 Router Logic:** The `lower(trim(1.Body))` function converts the message to lowercase and removes extra spaces, then compares it exactly to `/checkin` or `/checkout`. Only one branch should execute based on the exact command received.
 
 ### D. Check-in Branch
 1. **Google Sheets > Add a Row** (Timesheet sheet):
-   - `Date`: `formatDate(now; "YYYY-MM-DD"; "Asia/Singapore")`
-   - `Time`: `formatDate(now; "HH:mm:ss"; "Asia/Singapore")`
-   - `Employee Name`: value from Search Rows
-   - `Event Type`: `check-in`
+   - **Connection:** Use the same Google account connection
+   - **Spreadsheet ID:** Select your *Time Log MVP* spreadsheet
+   - **Sheet Name:** Select *Timesheet*
+   - **Table contains headers:** ✅ Check this box
+   - **Values mapping:**
+     - **Date (A):** `{{formatDate(now; "YYYY-MM-DD"; "Asia/Singapore")}}`
+     - **Time (B):** `{{formatDate(now; "HH:mm:ss"; "Asia/Singapore")}}`
+     - **Employee Name (C):** `{{2.0.Employee Name}}` (from Search Rows step - the `0` refers to the first result)
+     - **Event Type (D):** `check-in`
+   - **Unformatted:** No (leave unchecked)
+   - **Value input option:** Leave as default
+   - **Insert data option:** Leave as default
 2. **Twilio > Send a Message**:
-   - From: your sandbox number (starts with `whatsapp:+1…`)
-   - To: `From`
-   - Body: `✅ You checked in at {{Time}}.`
+   - **Connection:** Authorize with your Twilio account
+   - **Send a message from:** Your sandbox number (starts with `whatsapp:+1…`)
+   - **To:** `{{1.From}}` (the phone number that sent the message)
+   - **Message Body:** `✅ You checked in at {{formatDate(now; "HH:mm:ss"; "Asia/Singapore")}}.`
+   - **Media URL:** Leave empty
+   - **Smart encoded:** No (leave unchecked)
+   - **Validity period:** Leave as default
+   - **Status callback:** Leave empty
+   - **Application:** Leave empty
+   - **Max price:** Leave empty
+   - **Provide feedback:** No (leave unchecked)
 
 ### E. Check-out Branch
-Exact same as above, but `Event Type = check-out` and tweak the message text.
+1. **Google Sheets > Add a Row** (Timesheet sheet):
+   - **Connection:** Use the same Google account connection
+   - **Spreadsheet ID:** Select your *Time Log MVP* spreadsheet
+   - **Sheet Name:** Select *Timesheet*
+   - **Table contains headers:** ✅ Check this box
+   - **Values mapping:**
+     - **Date (A):** `{{formatDate(now; "YYYY-MM-DD"; "Asia/Singapore")}}`
+     - **Time (B):** `{{formatDate(now; "HH:mm:ss"; "Asia/Singapore")}}`
+     - **Employee Name (C):** `{{2.0.Employee Name}}` (from Search Rows step - the `0` refers to the first result)
+     - **Event Type (D):** `check-out`
+   - **Unformatted:** No (leave unchecked)
+   - **Value input option:** Leave as default
+   - **Insert data option:** Leave as default
+2. **Twilio > Send a Message**:
+   - **Connection:** Use the same Twilio connection
+   - **Send a message from:** Your sandbox number (starts with `whatsapp:+1…`)
+   - **To:** `{{1.From}}` (the phone number that sent the message)
+   - **Message Body:** `✅ You checked out at {{formatDate(now; "HH:mm:ss"; "Asia/Singapore")}}.`
+   - **Media URL:** Leave empty
+   - **Smart encoded:** No (leave unchecked)
+   - **Validity period:** Leave as default
+   - **Status callback:** Leave empty
+   - **Application:** Leave empty
+   - **Max price:** Leave empty
+   - **Provide feedback:** No (leave unchecked)
 
 ### F. Default Branch (Invalid Command)
-Single Twilio Send Message:  
-`❓ Unknown command. Use /checkin or /checkout.`
+**Twilio > Send a Message**:
+- **Connection:** Use the same Twilio connection
+- **Send a message from:** Your sandbox number (starts with `whatsapp:+1…`)
+- **To:** `{{1.From}}` (the phone number that sent the message)
+- **Message Body:** `❓ Unknown command. Use /checkin or /checkout.`
+- **Media URL:** Leave empty
+- **Smart encoded:** No (leave unchecked)
+- **Validity period:** Leave as default
+- **Status callback:** Leave empty
+- **Application:** Leave empty
+- **Max price:** Leave empty
+- **Provide feedback:** No (leave unchecked)
 
 ### G. Unregistered Number Handling
-If **Search Rows** returns **0**, add an error route:
-```
-🚫 You are not registered. Please contact HR.
-```
+If **Search Rows** returns **0**, add an error route with **Twilio > Send a Message**:
+- **Connection:** Use the same Twilio connection
+- **Send a message from:** Your sandbox number (starts with `whatsapp:+1…`)
+- **To:** `{{1.From}}` (the phone number that sent the message)
+- **Message Body:** `🚫 You are not registered. Please contact HR.`
+- **Media URL:** Leave empty
+- **Smart encoded:** No (leave unchecked)
+- **Validity period:** Leave as default
+- **Status callback:** Leave empty
+- **Application:** Leave empty
+- **Max price:** Leave empty
+- **Provide feedback:** No (leave unchecked)
 
 ### H. Save & Activate!
 Toggle the scenario ON. 🎉
