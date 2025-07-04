@@ -30,9 +30,10 @@ That's the entire Minimum Viable Product; everything else is optional polish. �
    `A1 = Phone Number` `B1 = Employee Name`  
    Example:
    ```
-   +6581234567 | Alice Tan
-   +6589876543 | Bob Lim
+   6581234567 | Alice Tan
+   6589876543 | Bob Lim
    ```
+   > **⚠️ Important:** Google Sheets automatically removes the `+` from phone numbers. Enter numbers WITHOUT the `+` prefix (e.g., `6581234567` not `+6581234567`).
 3. **Timesheet** tab  
    `A1 = Date` • `B1 = Time` • `C1 = Employee Name` • `D1 = Event Type`
 4. Share the sheet with **edit** permission to the Google account you'll connect in Make.
@@ -59,7 +60,8 @@ That's the entire Minimum Viable Product; everything else is optional polish. �
 1. Add **Google Sheets > Search Rows**.
 2. Connection: authorize with your Google account.  
    File: *Time Log MVP* • Sheet: *Employees*.
-3. Condition: **Phone Number = `From`** (coming from Twilio payload). Limit = 1.
+3. Condition: **Phone Number = `replace(From; "whatsapp:"; "")`** (removes the "whatsapp:" prefix from Twilio's phone number). Limit = 1.
+   > **💡 Phone Number Matching:** Twilio sends phone numbers as `whatsapp:+6581234567`, but your sheet stores them as `6581234567`. The `replace()` function strips the `whatsapp:` prefix for proper matching.
 
 ### C. Router & Command Paths
 Add a **Router** after the Search step; create three branches:
@@ -100,7 +102,7 @@ Toggle the scenario ON. 🎉
 ---
 
 ## 4️⃣  Test the Flow End-to-End
-1. Put your own WhatsApp number in *Employees* (international format `+65…`).
+1. Put your own WhatsApp number in *Employees* (international format without `+`, e.g., `6581234567`).
 2. Send `/checkin` to the sandbox number.
    - Expect an instant ✅ reply.
    - Confirm a new row in *Timesheet*.
@@ -131,6 +133,13 @@ Toggle the scenario ON. 🎉
 **Do I need to code?** Nope! All logic lives inside Make and its built-in functions.  
 **Is this secure enough?** Great for an MVP. For production, add signature checks and tighter permissions.  
 **Can I export the data?** It's a Google Sheet—download CSV anytime or connect another Make scenario.
+
+## 🔧 Troubleshooting
+
+### Phone Number Issues
+- **"You are not registered" error:** Check that the phone number in your Google Sheet matches exactly what Twilio sends (without the `+` prefix)
+- **Google Sheets removes the `+`:** This is normal! Always enter phone numbers without the `+` in your sheet
+- **Test your number format:** In Make's webhook test, check the `From` field to see exactly how Twilio formats your number
 
 ---
 
