@@ -182,10 +182,27 @@ Toggle the scenario ON. 🎉
 ## 5️⃣  Optional Upgrades (Nice-to-Have)
 | Feature | Why | How (Still No-Code) |
 |---------|-----|---------------------|
+| **WhatsApp Group Support** | Track team check-ins in a group chat | Add a filter to check if message is from a group, then extract sender info differently |
 | Duplicate-Check | Prevent multiple check-ins per day | Google Sheets > Search Timesheet before insert; if already exists, short-circuit with a polite "Already checked in today" reply. |
 | Signature Validation | Verify Twilio really sent the webhook | Use Make's `hash_hmac()` to compare `X-Twilio-Signature`. |
 | Daily Summary | Manager gets a recap | Scheduler module + aggregator + Twilio or Gmail send. |
 | Shift Duration | Auto-calc hours worked | On checkout, look up latest unmatched check-in and `dateDiff()` the times. |
+
+### 📱 WhatsApp Group Implementation
+**Why Groups?** Better team coordination, everyone can see who's checked in/out, and managers can monitor in real-time.
+
+**How to Set Up:**
+1. **Create a WhatsApp group** with your team members
+2. **Add your Twilio sandbox number** to the group
+3. **Modify the webhook logic** to handle group messages:
+   - **Check if group:** `{{1.NumMedia}}` or `{{1.GroupId}}` (if available)
+   - **Extract sender:** Use `{{1.Author}}` or `{{1.From}}` depending on group vs individual
+   - **Add group info:** Store group name/ID in your timesheet for better tracking
+
+**Enhanced Timesheet Structure:**
+```
+Date | Time | Employee Name | Event Type | Group Name | Phone Number
+```
 
 ---
 
@@ -207,6 +224,15 @@ Toggle the scenario ON. 🎉
 - **"You are not registered" error:** Check that the phone number in your Google Sheet matches exactly what Twilio sends (without the `+` prefix)
 - **Google Sheets removes the `+`:** This is normal! Always enter phone numbers without the `+` in your sheet
 - **Test your number format:** In Make's webhook test, check the `From` field to see exactly how Twilio formats your number
+
+### Employee Name Not Saving
+- **Check the reference:** In the Add a Row module, try these variations for Employee Name (C):
+  - `{{2.0.Employee Name}}` (most common)
+  - `{{2[0].Employee Name}}`
+  - `{{2.Employee Name[0]}}`
+  - `{{2.0.B}}` (if using column reference)
+- **Debug the Search Rows output:** Add a "Set up a filter" step after Search Rows to see what data is actually returned
+- **Verify column headers:** Make sure your Employees sheet has exactly "Employee Name" as the header (case sensitive)
 
 ---
 
